@@ -43,29 +43,6 @@ function PageRegister() {
                     </tr>
                 </tbody></table>
             </form>
-            {/* <script>
-                function doRegister() {
-                    let uname = document.getElementById('username').value;
-                    let pwd1 = document.getElementById('password').value;
-                    let pwd2 = document.getElementById('password2').value;
-
-                    if (pwd1 !== pwd2)
-                        return document.getElementById('errorText').textContent = "Passwords don't match.";
-
-                    api('newaccount', { username: uname, password: pwd1 })
-                        .then(function (j) {
-                            if (j.ok)
-                                window.location.assign('/login/');
-                            else
-                                document.getElementById('errorText').textContent = j.txt;
-                        }).catch(loadingError);
-                }
-
-                function contentInit() {
-                    document.getElementById('registerForm').addEventListener('submit', doRegister);
-                    if (userinfo) return window.location.assign('/');
-                }
-            </script> */}
         </div>
     );
 }
