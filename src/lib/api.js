@@ -6,6 +6,7 @@ function loadingError(e) {
 }
 
 function Api(path, args = false) {
+    document.getElementById('errorText').textContent = null;
 
     let headers = {};
 
