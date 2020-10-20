@@ -1,0 +1,72 @@
+* {
+    box-sizing: border-box;
+}
+
+html {
+    position: relative;
+    min-height: 100%;
+}
+
+body {
+    margin: 0 0 50px 0;
+    font-family: “Helvetica Neue”, Helvetica, Arial, sans-serif;
+}
+
+.capWidth {
+    margin: auto;
+    max-width: 900px;
+    padding: 0 10px;
+}
+
+/* begin page-specific styles */
+
+#scoreboard {
+    text-align: left;
+    width: 100%;
+    line-height: 2em;
+}
+
+#scoreboard td {
+    padding: 10px;
+    border-top: 1px solid black;
+    cursor: pointer;
+}
+
+.loginLabel {
+    width: 200px;
+    text-align: right;
+}
+
+.loginInput {
+    width: auto;
+    text-align: left;
+    padding: 10px;
+}
+
+.modalBG {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    background-color: rgba(200, 200, 200, 0.75);
+    cursor: pointer;
+}
+
+.modalBox {
+    background-color: white;
+    padding: 1em;
+    cursor: initial;
+    max-width: 100%;
+    max-height: 100%;
+    overflow: auto;
+}
+
+.modalClose {
+    float: right;
+    cursor: pointer;
+    line-height: .5em;
+}

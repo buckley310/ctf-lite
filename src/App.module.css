@@ -1,0 +1,14 @@
+.footer {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    line-height: 50px;
+    background-color: #f5f5f5;
+    display: block;
+}
+
+.errorText {
+    text-align: center;
+    background-color: red;
+    color: white;
+}
