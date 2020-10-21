@@ -1,15 +1,3 @@
-#scoreboard {
-    text-align: left;
-    width: 100%;
-    line-height: 2em;
-}
-
-#scoreboard td {
-    padding: 10px;
-    border-top: 1px solid black;
-    cursor: pointer;
-}
-
 .loginLabel {
     width: 200px;
     text-align: right;
