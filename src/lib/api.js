@@ -2,7 +2,8 @@
 
 function loadingError(e) {
     console.error(e);
-    document.getElementById('errorText').textContent = 'An error was encountered accessing the API';
+    let txt = document.querySelector('#errorText');
+    if (txt) txt.textContent = 'An error was encountered accessing the API';
 }
 
 function Api(path, args = false) {
