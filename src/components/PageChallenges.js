@@ -1,9 +1,21 @@
 import React from 'react';
 import { Api, loadingError } from '../lib/api.js';
-import ChallengeCardSection from './ChallengeCardSection';
+import ChallengeCardGrid from './ChallengeCardGrid';
 
 export default class PageChallenges extends React.Component {
     state = { challenges: [] };
+    submitFlag = e => {
+        e.preventDefault();
+        let flag = document.querySelector('#flagInput').value;
+        document.querySelector('#flagInput').value = null;
+        if (!flag) return;
+        Api('submitflag', { flag: flag })
+            .then(j => {
+                alert(j.msg);
+                if (j.ok)
+                    this.props.checkSession();
+            }).catch(loadingError);
+    };
     render() {
 
         let sections = {};
@@ -18,41 +30,14 @@ export default class PageChallenges extends React.Component {
             <div className="capWidth">
                 <h1>Challenges!</h1>
 
-                <form id="loginForm" style={{ display: 'none' }} onSubmit={e => e.preventDefault()}>
-                    <input id="flag" type="text" placeholder="flag{}" />
+                <form style={this.props.userinfo ? {} : { display: 'none' }} onSubmit={this.submitFlag}>
+                    <input id="flagInput" type="text" placeholder="flag{}" />
                     <input type="submit" value="Submit" />
                 </form>
-                <div id="challenges">
-                    {Object.keys(sections).map(category => (
-                        <ChallengeCardSection
-                            key={category}
-                            challenges={sections[category]}
-                            solves={this.props.userinfo ? this.props.userinfo.solves : []}
-                        />
-                    ))}
-                </div>
-                {/* <script>
-                function submitFlag() {
-                    let flag = document.getElementById('flag').value;
-                    if (!flag) return;
-                    api('submitflag', { flag: flag })
-                        .then(function (j) {
-                                alert(j.msg);
-                                if (j.ok)
-                                    location.reload();
-                        }).catch(loadingError);
-                }
-                function contentInit() {
-                    insertChallengeCards(
-                        document.getElementById('challenges'),
-                        userinfo ? userinfo['_id'] : ''
-                    );
-                    if (userinfo) {
-                        document.getElementById('loginForm').addEventListener('submit', submitFlag);
-                        document.getElementById('loginForm').style.display = '';
-                    }
-                }
-            </script> */}
+                <ChallengeCardGrid
+                    challenges={this.state.challenges}
+                    solves={this.props.userinfo ? this.props.userinfo.solves : []}
+                />
             </div>
         );
     }

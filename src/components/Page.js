@@ -8,7 +8,7 @@ import PageLogin from './PageLogin';
 
 function Page(props) {
     switch (props.path[0]) {
-        case 'challenges': return <PageChallenges userinfo={props.userinfo} />;
+        case 'challenges': return <PageChallenges userinfo={props.userinfo} checkSession={props.checkSession} />;
         case 'scoreboard': return <PageScoreboard />;
         case 'profile': return <PageProfile userinfo={props.userinfo} />;
         case 'register': return <PageRegister />;
