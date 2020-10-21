@@ -1,12 +1,12 @@
 import React from 'react';
 
-function PageProfile() {
+function PageProfile(props) {
     return (
         <div className="capWidth">
             <h1> profile </h1>
-            <span id="emailLine">email: <span id="email" /><br /></span>
-            username: <span id="username"></span><br />
-            score: <span id="score"></span><br />
+            email: {props.userinfo.email}<br />
+            username: {props.userinfo.username}<br />
+            score: {props.userinfo.score}<br />
 
             <div id="challenges"></div>
 
@@ -77,9 +77,6 @@ function PageProfile() {
                         return window.location.assign('/');
 
                     insertChallengeCards(document.getElementById('challenges'), userinfo);
-                    document.getElementById('email').textContent = userinfo.email;
-                    document.getElementById('username').textContent = userinfo.username;
-                    document.getElementById('score').textContent = userinfo.score;
 
                     function changePass() {
                         let pwdold = document.getElementById('passwordOld').value;
