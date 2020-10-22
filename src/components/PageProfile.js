@@ -44,14 +44,33 @@ export default class PageProfile extends React.Component {
             }).catch(loadingError);
     };
 
+    componentDidUpdate = () => {
+        let otherUser = this.props.path[1];
+        if (otherUser) {
+            if (otherUser.match(/^[a-z0-9]+$/i)) {
+                if (otherUser !== this.state.fetchedUser) {
+                    this.setState({ fetchedUser: otherUser, userinfo: this.blankuser });
+                    Api('userinfo?uid=' + otherUser)
+                        .then(x => { if (x.ok) this.setState({ fetchedUser: x.data._id, userinfo: x.data }) })
+                        .catch(loadingError);
+                }
+            } else if (this.state.userinfo !== this.blankuser) {
+                this.setState({ fetchedUser: null, userinfo: this.blankuser });
+            }
+        } else if (this.props.userinfo && this.props.userinfo !== this.state.userinfo) {
+            this.setState({ userinfo: this.props.userinfo, fetchedUser: null });
+        }
+    };
+
     render() {
+        let personalStuff = Boolean(this.props.path[1]) ? { display: 'none' } : {};
         return (
             <div className="capWidth">
-                <div style={{ display: this.props.userinfo ? '' : 'none' }}>
-                    <h1>profile</h1>
-                    <div>email: {this.props.userinfo.email}</div>
-                    <div>username: {this.props.userinfo.username}</div>
-                    <div>score: {this.props.userinfo.score}</div>
+                <h1>Profile</h1>
+                <div>username: {this.state.userinfo.username}</div>
+                <div>score: {this.state.userinfo.score}</div>
+                <div style={personalStuff}>
+                    <div>email: {this.state.userinfo.email}</div>
 
                     <form onSubmit={this.changePass} style={{ backgroundColor: '#f0f0f0' }}>
                         <h3>Change Password:</h3>
@@ -99,8 +118,19 @@ export default class PageProfile extends React.Component {
                 </div>
 
                 <h1>Solved Challenges:</h1>
-                <ChallengeCardGrid solves={this.props.userinfo ? this.props.userinfo.solves : []} />
+                <ChallengeCardGrid solves={this.state.userinfo ? this.state.userinfo.solves : []} />
             </div>
         );
     }
+    blankuser = {
+        _id: null,
+        username: null,
+        email: null,
+        score: null,
+        solves: []
+    };
+    state = {
+        fetchedUser: null,
+        userinfo: this.blankuser
+    };
 }
