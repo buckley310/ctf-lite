@@ -49,11 +49,9 @@ export default class PageProfile extends React.Component {
             <div className="capWidth">
                 <div style={{ display: this.props.userinfo ? '' : 'none' }}>
                     <h1>profile</h1>
-                    <div style={{ display: this.props.userinfo ? '' : 'none' }}>
-                        <div>email: {this.props.userinfo.email}</div>
-                        <div>username: {this.props.userinfo.username}</div>
-                        <div>score: {this.props.userinfo.score}</div>
-                    </div>
+                    <div>email: {this.props.userinfo.email}</div>
+                    <div>username: {this.props.userinfo.username}</div>
+                    <div>score: {this.props.userinfo.score}</div>
 
                     <form onSubmit={this.changePass} style={{ backgroundColor: '#f0f0f0' }}>
                         <h3>Change Password:</h3>
