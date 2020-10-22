@@ -1,7 +1,7 @@
 import React from 'react';
 import styles from './App.module.css';
 import NavBar from './components/NavBar';
-import Page from './components/Page';
+import { Page, ValidPageList } from './components/Page';
 import { Api, loadingError } from './lib/api.js';
 
 export default class App extends React.Component {
@@ -24,7 +24,7 @@ export default class App extends React.Component {
     getPath = () => {
         let path = window.location.hash.split('/').slice(1, Infinity);
 
-        if (!['challenges', 'scoreboard', 'profile', 'register', 'login'].includes(path[0]))
+        if (!ValidPageList.includes(path[0]))
             path = [''];
 
         let title = this.websiteName;

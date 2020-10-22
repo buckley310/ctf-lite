@@ -6,15 +6,26 @@ import PageProfile from './PageProfile';
 import PageRegister from './PageRegister';
 import PageLogin from './PageLogin';
 
+let ValidPages = {
+    'challenges': PageChallenges,
+    'scoreboard': PageScoreboard,
+    'profile': PageProfile,
+    'register': PageRegister,
+    'login': PageLogin,
+    '': PageHome
+};
+
 function Page(props) {
-    switch (props.path[0]) {
-        case 'challenges': return <PageChallenges userinfo={props.userinfo} checkSession={props.checkSession} />;
-        case 'scoreboard': return <PageScoreboard userinfo={props.userinfo} checkSession={props.checkSession} />;
-        case 'profile': return <PageProfile userinfo={props.userinfo} checkSession={props.checkSession} />;
-        case 'register': return <PageRegister userinfo={props.userinfo} checkSession={props.checkSession} />;
-        case 'login': return <PageLogin userinfo={props.userinfo} checkSession={props.checkSession} />;
-        default: return <PageHome userinfo={props.userinfo} checkSession={props.checkSession} />;
-    }
+    return React.createElement(
+        ValidPages[props.path[0]],
+        {
+            userinfo: props.userinfo,
+            checkSession: props.checkSession,
+            path: props.path
+        }
+    );
 }
 
-export default Page;
+let ValidPageList = Object.keys(ValidPages);
+
+export { Page, ValidPageList };
