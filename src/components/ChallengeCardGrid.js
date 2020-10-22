@@ -1,10 +1,12 @@
 import React from 'react';
+import { Api, loadingError } from '../lib/api.js';
 import ChallengeCard from './ChallengeCard';
 
 export default class ChallengeCardGrid extends React.Component {
+    state = { challenges: [] };
     render() {
         let sections = {};
-        for (let chal of this.props.challenges) {
+        for (let chal of this.state.challenges) {
             if (!sections[chal['category']])
                 sections[chal['category']] = [];
 
@@ -16,7 +18,7 @@ export default class ChallengeCardGrid extends React.Component {
                 {Object.keys(sections).map(category => (
                     <div key={category}>
                         <div style={{ fontSize: "1.5em" }}>
-                            {this.props.challenges[0].category}
+                            {this.state.challenges[0].category}
                         </div>
                         <div className="challengeSection" style={{ display: 'flex', flexWrap: 'wrap' }}>
                             {sections[category].map(chal =>
@@ -32,4 +34,5 @@ export default class ChallengeCardGrid extends React.Component {
             </div>
         );
     }
+    componentDidMount = () => Api('challenges').then(x => this.setState({ challenges: x })).catch(loadingError);
 }
