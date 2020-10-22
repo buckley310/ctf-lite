@@ -1,60 +1,61 @@
 import React from 'react';
 
-function PageProfile(props) {
-    return (
-        <div className="capWidth">
-            <h1> profile </h1>
-            email: {props.userinfo.email}<br />
-            username: {props.userinfo.username}<br />
-            score: {props.userinfo.score}<br />
+export default class PageProfile extends React.Component {
+    render() {
+        return (
+            <div className="capWidth">
+                <h1> profile </h1>
+                email: {this.props.userinfo.email}<br />
+                username: {this.props.userinfo.username}<br />
+                score: {this.props.userinfo.score}<br />
 
-            <div id="challenges"></div>
+                <div id="challenges"></div>
 
-            <form id="changePassForm" onSubmit={e => e.preventDefault()} style={{ backgroundColor: '#f0f0f0' }}>
-                <h3>Change Password:</h3>
-                <table><tbody>
-                    <tr>
-                        <th className="loginLabel">Current Password:</th>
-                        <th className="loginInput"> <input id="passwordOld" type="password" required /> </th>
-                    </tr>
-                    <tr>
-                        <th className="loginLabel">New Password:</th>
-                        <th className="loginInput"> <input id="password" type="password" required /> </th>
-                    </tr>
-                    <tr>
-                        <th className="loginLabel">Confirm New Password:</th>
-                        <th className="loginInput"> <input id="password2" type="password" required /> </th>
-                    </tr>
-                    <tr>
-                        <th></th>
-                        <th className="loginInput"> <input type="submit" value="Change" /> </th>
-                    </tr>
-                </tbody></table>
-            </form>
+                <form id="changePassForm" onSubmit={e => e.preventDefault()} style={{ backgroundColor: '#f0f0f0' }}>
+                    <h3>Change Password:</h3>
+                    <table><tbody>
+                        <tr>
+                            <th className="loginLabel">Current Password:</th>
+                            <th className="loginInput"> <input id="passwordOld" type="password" required /> </th>
+                        </tr>
+                        <tr>
+                            <th className="loginLabel">New Password:</th>
+                            <th className="loginInput"> <input id="password" type="password" required /> </th>
+                        </tr>
+                        <tr>
+                            <th className="loginLabel">Confirm New Password:</th>
+                            <th className="loginInput"> <input id="password2" type="password" required /> </th>
+                        </tr>
+                        <tr>
+                            <th></th>
+                            <th className="loginInput"> <input type="submit" value="Change" /> </th>
+                        </tr>
+                    </tbody></table>
+                </form>
 
-            <form id="changeEmailForm" onSubmit={e => e.preventDefault()} style={{ backgroundColor: '#f0f0f0' }}>
-                <h3>Change Email:</h3>
-                <table><tbody>
-                    <tr>
-                        <th className="loginLabel">Current Password:</th>
-                        <th className="loginInput"> <input id="epassword" type="password" required /> </th>
-                    </tr>
-                    <tr>
-                        <th className="loginLabel">New Email:</th>
-                        <th className="loginInput"> <input id="email1" type="email" required /> </th>
-                    </tr>
-                    <tr>
-                        <th className="loginLabel">Confirm New Email:</th>
-                        <th className="loginInput"> <input id="email2" type="email" required /> </th>
-                    </tr>
-                    <tr>
-                        <th></th>
-                        <th className="loginInput"> <input type="submit" value="Change" /> </th>
-                    </tr>
-                </tbody></table>
-            </form>
+                <form id="changeEmailForm" onSubmit={e => e.preventDefault()} style={{ backgroundColor: '#f0f0f0' }}>
+                    <h3>Change Email:</h3>
+                    <table><tbody>
+                        <tr>
+                            <th className="loginLabel">Current Password:</th>
+                            <th className="loginInput"> <input id="epassword" type="password" required /> </th>
+                        </tr>
+                        <tr>
+                            <th className="loginLabel">New Email:</th>
+                            <th className="loginInput"> <input id="email1" type="email" required /> </th>
+                        </tr>
+                        <tr>
+                            <th className="loginLabel">Confirm New Email:</th>
+                            <th className="loginInput"> <input id="email2" type="email" required /> </th>
+                        </tr>
+                        <tr>
+                            <th></th>
+                            <th className="loginInput"> <input type="submit" value="Change" /> </th>
+                        </tr>
+                    </tbody></table>
+                </form>
 
-            {/* <script>
+                {/* <script>
                 function contentInit() {
                     let hash = location.hash.replace('#', '');
                     if (hash) {
@@ -118,8 +119,7 @@ function PageProfile(props) {
                     document.getElementById('changeEmailForm').addEventListener('submit', changeEmail);
                 }
             </script> */}
-        </div>
-    );
+            </div>
+        );
+    }
 }
-
-export default PageProfile;
