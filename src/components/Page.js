@@ -9,11 +9,11 @@ import PageLogin from './PageLogin';
 function Page(props) {
     switch (props.path[0]) {
         case 'challenges': return <PageChallenges userinfo={props.userinfo} checkSession={props.checkSession} />;
-        case 'scoreboard': return <PageScoreboard />;
-        case 'profile': return <PageProfile userinfo={props.userinfo} />;
-        case 'register': return <PageRegister />;
-        case 'login': return <PageLogin checkSession={props.checkSession} />;
-        default: return <PageHome userinfo={props.userinfo} />;
+        case 'scoreboard': return <PageScoreboard userinfo={props.userinfo} checkSession={props.checkSession} />;
+        case 'profile': return <PageProfile userinfo={props.userinfo} checkSession={props.checkSession} />;
+        case 'register': return <PageRegister userinfo={props.userinfo} checkSession={props.checkSession} />;
+        case 'login': return <PageLogin userinfo={props.userinfo} checkSession={props.checkSession} />;
+        default: return <PageHome userinfo={props.userinfo} checkSession={props.checkSession} />;
     }
 }
 

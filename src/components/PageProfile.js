@@ -1,17 +1,61 @@
 import React from 'react';
+import { Api, loadingError } from '../lib/api.js';
 
 export default class PageProfile extends React.Component {
+
+    changeEmail = e => {
+        e.preventDefault();
+
+        let pwd = document.getElementById('epassword').value;
+        let email1 = document.getElementById('email1').value;
+        let email2 = document.getElementById('email2').value;
+
+        if (email1 !== email2)
+            return document.getElementById('errorText').textContent = "Emails don't match.";
+
+        Api('setemail', { password: pwd, email: email1 })
+            .then(j => {
+                if (j.ok) {
+                    alert('Email has been changed.');
+                    this.props.checkSession();
+                } else {
+                    document.getElementById('errorText').textContent = j.txt;
+                }
+            }).catch(loadingError);
+    };
+
+    changePass = e => {
+        e.preventDefault();
+
+        let pwdold = document.getElementById('passwordOld').value;
+        let pwd1 = document.getElementById('password').value;
+        let pwd2 = document.getElementById('password2').value;
+
+        if (pwd1 !== pwd2)
+            return document.getElementById('errorText').textContent = "Passwords don't match.";
+
+        Api('setpassword', { oldpass: pwdold, newpass: pwd1 })
+            .then(j => {
+                if (j.ok)
+                    alert('Password has been changed.');
+                else
+                    document.getElementById('errorText').textContent = j.txt;
+            }).catch(loadingError);
+    };
+
     render() {
         return (
             <div className="capWidth">
-                <h1> profile </h1>
-                email: {this.props.userinfo.email}<br />
-                username: {this.props.userinfo.username}<br />
-                score: {this.props.userinfo.score}<br />
+                <h1>profile</h1>
+                <div style={{ display: this.props.userinfo ? '' : 'none' }}>
+                    <div>email: {this.props.userinfo.email}</div>
+                    <div>username: {this.props.userinfo.username}</div>
+                    <div>score: {this.props.userinfo.score}</div>
+                </div>
 
                 <div id="challenges"></div>
 
-                <form id="changePassForm" onSubmit={e => e.preventDefault()} style={{ backgroundColor: '#f0f0f0' }}>
+                <form onSubmit={this.changePass} style={{ backgroundColor: '#f0f0f0', display: this.props.userinfo ? '' : 'none' }}>
                     <h3>Change Password:</h3>
                     <table><tbody>
                         <tr>
@@ -33,7 +77,7 @@ export default class PageProfile extends React.Component {
                     </tbody></table>
                 </form>
 
-                <form id="changeEmailForm" onSubmit={e => e.preventDefault()} style={{ backgroundColor: '#f0f0f0' }}>
+                <form onSubmit={this.changeEmail} style={{ backgroundColor: '#f0f0f0', display: this.props.userinfo ? '' : 'none' }}>
                     <h3>Change Email:</h3>
                     <table><tbody>
                         <tr>
@@ -74,49 +118,9 @@ export default class PageProfile extends React.Component {
                         return;
                     }
 
-                    if (!userinfo)
-                        return window.location.assign('/');
+                    if (!userinfo) return window.location.assign('/');
 
                     insertChallengeCards(document.getElementById('challenges'), userinfo);
-
-                    function changePass() {
-                        let pwdold = document.getElementById('passwordOld').value;
-                        let pwd1 = document.getElementById('password').value;
-                        let pwd2 = document.getElementById('password2').value;
-
-                        if (pwd1 !== pwd2)
-                            return document.getElementById('errorText').textContent = "Passwords don't match.";
-
-                        api('setpassword', { oldpass: pwdold, newpass: pwd1 })
-                            .then(function (j) {
-                                if (j.ok)
-                                    alert('Password has been changed.');
-                                else
-                                    document.getElementById('errorText').textContent = j.txt;
-                            }).catch(loadingError);
-                    }
-
-                    function changeEmail() {
-                        let pwd = document.getElementById('epassword').value;
-                        let email1 = document.getElementById('email1').value;
-                        let email2 = document.getElementById('email2').value;
-
-                        if (email1 !== email2)
-                            return document.getElementById('errorText').textContent = "Emails don't match.";
-
-                        api('setemail', { password: pwd, email: email1 })
-                            .then(function (j) {
-                                if (j.ok) {
-                                    alert('Email has been changed.');
-                                    window.location.reload();
-                                } else {
-                                    document.getElementById('errorText').textContent = j.txt;
-                                }
-                            }).catch(loadingError);
-                    }
-
-                    document.getElementById('changePassForm').addEventListener('submit', changePass);
-                    document.getElementById('changeEmailForm').addEventListener('submit', changeEmail);
                 }
             </script> */}
             </div>
