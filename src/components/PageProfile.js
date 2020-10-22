@@ -47,56 +47,58 @@ export default class PageProfile extends React.Component {
     render() {
         return (
             <div className="capWidth">
-                <h1>profile</h1>
                 <div style={{ display: this.props.userinfo ? '' : 'none' }}>
-                    <div>email: {this.props.userinfo.email}</div>
-                    <div>username: {this.props.userinfo.username}</div>
-                    <div>score: {this.props.userinfo.score}</div>
+                    <h1>profile</h1>
+                    <div style={{ display: this.props.userinfo ? '' : 'none' }}>
+                        <div>email: {this.props.userinfo.email}</div>
+                        <div>username: {this.props.userinfo.username}</div>
+                        <div>score: {this.props.userinfo.score}</div>
+                    </div>
+
+                    <form onSubmit={this.changePass} style={{ backgroundColor: '#f0f0f0' }}>
+                        <h3>Change Password:</h3>
+                        <table><tbody>
+                            <tr>
+                                <th className="loginLabel">Current Password:</th>
+                                <th className="loginInput"> <input id="passwordOld" type="password" required /> </th>
+                            </tr>
+                            <tr>
+                                <th className="loginLabel">New Password:</th>
+                                <th className="loginInput"> <input id="password" type="password" required /> </th>
+                            </tr>
+                            <tr>
+                                <th className="loginLabel">Confirm New Password:</th>
+                                <th className="loginInput"> <input id="password2" type="password" required /> </th>
+                            </tr>
+                            <tr>
+                                <th></th>
+                                <th className="loginInput"> <input type="submit" value="Change" /> </th>
+                            </tr>
+                        </tbody></table>
+                    </form>
+
+                    <form onSubmit={this.changeEmail} style={{ backgroundColor: '#f0f0f0' }}>
+                        <h3>Change Email:</h3>
+                        <table><tbody>
+                            <tr>
+                                <th className="loginLabel">Current Password:</th>
+                                <th className="loginInput"> <input id="epassword" type="password" required /> </th>
+                            </tr>
+                            <tr>
+                                <th className="loginLabel">New Email:</th>
+                                <th className="loginInput"> <input id="email1" type="email" required /> </th>
+                            </tr>
+                            <tr>
+                                <th className="loginLabel">Confirm New Email:</th>
+                                <th className="loginInput"> <input id="email2" type="email" required /> </th>
+                            </tr>
+                            <tr>
+                                <th></th>
+                                <th className="loginInput"> <input type="submit" value="Change" /> </th>
+                            </tr>
+                        </tbody></table>
+                    </form>
                 </div>
-
-                <form onSubmit={this.changePass} style={{ backgroundColor: '#f0f0f0', display: this.props.userinfo ? '' : 'none' }}>
-                    <h3>Change Password:</h3>
-                    <table><tbody>
-                        <tr>
-                            <th className="loginLabel">Current Password:</th>
-                            <th className="loginInput"> <input id="passwordOld" type="password" required /> </th>
-                        </tr>
-                        <tr>
-                            <th className="loginLabel">New Password:</th>
-                            <th className="loginInput"> <input id="password" type="password" required /> </th>
-                        </tr>
-                        <tr>
-                            <th className="loginLabel">Confirm New Password:</th>
-                            <th className="loginInput"> <input id="password2" type="password" required /> </th>
-                        </tr>
-                        <tr>
-                            <th></th>
-                            <th className="loginInput"> <input type="submit" value="Change" /> </th>
-                        </tr>
-                    </tbody></table>
-                </form>
-
-                <form onSubmit={this.changeEmail} style={{ backgroundColor: '#f0f0f0', display: this.props.userinfo ? '' : 'none' }}>
-                    <h3>Change Email:</h3>
-                    <table><tbody>
-                        <tr>
-                            <th className="loginLabel">Current Password:</th>
-                            <th className="loginInput"> <input id="epassword" type="password" required /> </th>
-                        </tr>
-                        <tr>
-                            <th className="loginLabel">New Email:</th>
-                            <th className="loginInput"> <input id="email1" type="email" required /> </th>
-                        </tr>
-                        <tr>
-                            <th className="loginLabel">Confirm New Email:</th>
-                            <th className="loginInput"> <input id="email2" type="email" required /> </th>
-                        </tr>
-                        <tr>
-                            <th></th>
-                            <th className="loginInput"> <input type="submit" value="Change" /> </th>
-                        </tr>
-                    </tbody></table>
-                </form>
 
                 <h1>Solved Challenges:</h1>
                 <ChallengeCardGrid solves={this.props.userinfo ? this.props.userinfo.solves : []} />
