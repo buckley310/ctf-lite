@@ -1,5 +1,6 @@
 import React from 'react';
 import { Api, loadingError } from '../lib/api.js';
+import ChallengeCardGrid from './ChallengeCardGrid';
 
 export default class PageProfile extends React.Component {
 
@@ -53,8 +54,6 @@ export default class PageProfile extends React.Component {
                     <div>score: {this.props.userinfo.score}</div>
                 </div>
 
-                <div id="challenges"></div>
-
                 <form onSubmit={this.changePass} style={{ backgroundColor: '#f0f0f0', display: this.props.userinfo ? '' : 'none' }}>
                     <h3>Change Password:</h3>
                     <table><tbody>
@@ -99,30 +98,8 @@ export default class PageProfile extends React.Component {
                     </tbody></table>
                 </form>
 
-                {/* <script>
-                function contentInit() {
-                    let hash = location.hash.replace('#', '');
-                    if (hash) {
-                        document.getElementById('emailLine').outerHTML = '';
-                        document.getElementById('changePassForm').outerHTML = '';
-                        document.getElementById('changeEmailForm').outerHTML = '';
-                        api('userinfo?uid=' + hash).then(function (j) {
-                            if (!j.ok) {
-                                document.getElementById('errorText').textContent = j.txt;
-                                return;
-                            }
-                            document.getElementById('username').textContent = j.data.username;
-                            document.getElementById('score').textContent = j.data.score;
-                            insertChallengeCards(document.getElementById('challenges'), j.data);
-                        });
-                        return;
-                    }
-
-                    if (!userinfo) return window.location.assign('/');
-
-                    insertChallengeCards(document.getElementById('challenges'), userinfo);
-                }
-            </script> */}
+                <h1>Solved Challenges:</h1>
+                <ChallengeCardGrid solves={this.props.userinfo ? this.props.userinfo.solves : []} />
             </div>
         );
     }
