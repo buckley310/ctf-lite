@@ -1,32 +1,18 @@
 #!/usr/bin/env python3
 
+from secrets import token_hex
+from random import random
 import pymongo
 
 db = pymongo.MongoClient('mongodb://127.0.0.1:27017')['ctf']
 
-db['challenges'].insert_many([
-    {
-        'title': 'a', 'category': 'web', 'points': 10, 'flag': 'flag{a}',
-        'text': 'foo'
-    },
-    {
-        'title': 'b', 'category': 'web', 'points': 10, 'flag': 'flag{b}',
-        'text': 'bar'
-    },
-    {
-        'title': 'c', 'category': 'web', 'points': 10, 'flag': 'flag{c}',
-        'text': 'baz'
-    },
-    {
-        'title': 'd', 'category': 'web', 'points': 10, 'flag': 'flag{d}',
-        'text': 'boo'
-    },
-    {
-        'title': 'e', 'category': 'pwn', 'points': 10, 'flag': 'flag{e}',
-        'text': 'bob'
-    },
-    {
-        'title': 'f', 'category': 'pwn', 'points': 10, 'flag': 'flag{f}',
-        'text': 'boot'
-    },
-])
+for cat in ['web', 'crypto', 'pwn', 'programming', 'forensics']:
+    for n in range(int(4+4*random())):
+        t = token_hex(2+int(random()*8))
+        db['challenges'].insert_one({
+            'title': t,
+            'flag': f'flag{{{t}}}',
+            'category': cat,
+            'points': int(random()*100),
+            'text': ' '.join([token_hex(int(random()*12)) for _ in range(10)]),
+        })
