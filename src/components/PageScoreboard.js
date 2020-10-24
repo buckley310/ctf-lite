@@ -5,7 +5,7 @@ import styles from './PageScoreboard.module.css';
 export default class PageScoreboard extends React.Component {
     state = { scoreboard: [] };
     viewProfile = id => {
-        alert(`TODO: ${id}`);
+        window.location.assign('#/profile/' + id);
     };
     render() {
         return (

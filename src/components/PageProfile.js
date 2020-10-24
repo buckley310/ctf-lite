@@ -61,6 +61,7 @@ export default class PageProfile extends React.Component {
             this.setState({ userinfo: this.props.userinfo, fetchedUser: null });
         }
     };
+    componentDidMount = this.componentDidUpdate;
 
     render() {
         let personalStuff = Boolean(this.props.path[1]) ? { display: 'none' } : {};
