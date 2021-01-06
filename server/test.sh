@@ -5,7 +5,7 @@ db=/tmp/test.db
 
 rm $db 2>/dev/null ||:
 
-./database.py
+./db_test.py
 
 for x in users challenges solves
 do

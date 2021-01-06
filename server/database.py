@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
 
-import secrets
-
 from sqlalchemy import Column, ForeignKey, Integer, Text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
@@ -9,11 +7,6 @@ from sqlalchemy import create_engine
 
 Base = declarative_base()
 engine = create_engine("sqlite:////tmp/test.db", echo=False)
-
-
-def rand_id():
-    # give a positive, signed, 64-bit integer
-    return secrets.randbelow(1 << 63)
 
 
 class User(Base):
@@ -39,15 +32,5 @@ class Solve(Base):
     challenge = Column(Integer, ForeignKey('challenges.id'), nullable=False)
 
 
-Session = sessionmaker(bind=engine)
 Base.metadata.create_all(engine)
-
-c = Challenge(title='foo')
-u = User(id=rand_id(), name='john smith')
-
-ses = Session()
-ses.add(c)
-ses.commit()  # hydrate c.id
-ses.add(u)
-ses.add(Solve(user=u.id, challenge=c.id))
-ses.commit()
+DbSession = sessionmaker(bind=engine)
