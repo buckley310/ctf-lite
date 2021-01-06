@@ -1,18 +1,26 @@
 #!/usr/bin/env python3
 
-from sqlalchemy import Column, ForeignKey, Integer, Text
+from sqlalchemy import create_engine, Column, ForeignKey, Integer, Text, Table
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker, relationship
 
 Base = declarative_base()
 engine = create_engine("sqlite:////tmp/test.db", echo=False)
+
+solves = Table(
+    'solves', Base.metadata,
+    Column('id', Integer, primary_key=True, autoincrement=True),
+    Column('user_id', Integer, ForeignKey('users.id')),
+    Column('challenge_id', Integer, ForeignKey('challenges.id')),
+)
 
 
 class User(Base):
     __tablename__ = 'users'
     id = Column(Integer, primary_key=True, nullable=False)
     name = Column(Text(), nullable=False)
+    solves = relationship(
+        'Challenge', secondary=solves, back_populates="solvers")
 
 
 class Challenge(Base):
@@ -23,13 +31,8 @@ class Challenge(Base):
     flag = Column(Text)
     category = Column(Text)
     points = Column(Integer)
-
-
-class Solve(Base):
-    __tablename__ = 'solves'
-    id = Column(Integer, primary_key=True, autoincrement=True, nullable=False)
-    user = Column(Integer, ForeignKey('users.id'), nullable=False)
-    challenge = Column(Integer, ForeignKey('challenges.id'), nullable=False)
+    solvers = relationship(
+        'User', secondary=solves, back_populates="solves")
 
 
 Base.metadata.create_all(engine)
