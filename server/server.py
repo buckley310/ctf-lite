@@ -4,35 +4,44 @@ import os
 import jwt
 import bcrypt
 import bisect
-from motor.motor_asyncio import AsyncIOMotorClient
-from bson.objectid import ObjectId
 from collections import deque, Counter
 from time import time
-from quart import Quart, jsonify, request
-from quart_cors import cors
+from flask import Flask, jsonify, request
+from flask_cors import CORS
 from threading import Lock
+from secrets import randbelow
+from database import User, Challenge, DbSession as db
 
-app = Quart(__name__)
-cors(app)
+app = Flask(__name__)
+CORS(app)
 rateLimit = deque(maxlen=64)
 jwt_secret = os.urandom(32)
 statsLock = Lock()
 
 
+def rand_id():
+    # give a positive, signed, 64-bit integer
+    return randbelow(1 << 63)
+
+
+@app.teardown_appcontext
+def shutdown_session(exception=None):
+    db.remove()
+
+
 @app.before_first_request
-async def start_db():
-    global db
-    db = AsyncIOMotorClient('mongodb://127.0.0.1:27017')['ctf']
-    await calcStats()
+def start_db():
+    calcStats()
 
 
 def checkStr(*argv):
     for s in argv:
+        # TODO: raise instead of assert
         assert isinstance(s, str)
         assert len(s)
 
 
-async def calcStats():
+def calcStats():
     global solveCounts
     global scoreboard
 
@@ -41,20 +50,20 @@ async def calcStats():
     with statsLock:
         solveCounts = dict([
             (
-                str(chal['_id']),
-                await db.users.count_documents({'solves': str(chal['_id'])})
+                chal.id,
+                db.query(User).filter(User.solves.contains(chal)).count()
             )
-            async for chal in db.challenges.find()
+            for chal in db.query(Challenge)
         ])
 
-        cscores = await get_challenge_scores()
+        cscores = get_challenge_scores()
         board = []
-        async for u in db.users.find():
-            score = sum(cscores.get(x, 0) for x in u['solves'])
+        for u in db.query(User):
+            score = sum(cscores.get(x.id, 0) for x in u.solves)
             bisect.insort(board, (-score,
-                                  u['lastSolveTime'],
-                                  u['username'],
-                                  str(u['_id'])))
+                                  u.lastSolveTime,
+                                  u.name,
+                                  u.id))
             while len(board) > 10 and board[-1][0] != board[-2][0]:
                 board.pop()
         scoreboard = [
@@ -63,26 +72,26 @@ async def calcStats():
         ]
 
 
-async def get_user_record():
+def get_user_record():
     try:
         auth = jwt.decode(request.headers['X-Sesid'],
                           jwt_secret,
                           algorithms=['HS256'])
     except:
         return None
-    return await db.users.find_one({'_id': ObjectId(auth['userid'])})
+    return db.users.find_one({'_id': ObjectId(auth['userid'])})
 
 
-async def get_challenge_scores():
+def get_challenge_scores():
     return dict([
-        (str(x['_id']), x['points'])
-        async for x in db.challenges.find()
+        (x.id, x.points)
+        for x in db.query(Challenge)
     ])
 
 
 @app.route("/login", methods=['POST'])
-async def login():
-    args = await request.get_json()
+def login():
+    args = request.get_json()
     checkStr(args['username'], args['password'])
 
     # block brute force \/
@@ -95,7 +104,7 @@ async def login():
         return jsonify({'txt': 'Slow down, jeez'})
     # block brute force /\
 
-    u = await db.users.find_one({'username': args['username']})
+    u = db.users.find_one({'username': args['username']})
 
     if not u:
         bcrypt.hashpw(b'no timing attacks', bcrypt.gensalt())
@@ -113,14 +122,14 @@ async def login():
 
 
 @app.route("/userinfo")
-async def OtherUserInfo():
+def OtherUserInfo():
     checkStr(request.args['uid'])
     try:
         uid = ObjectId(request.args['uid'])
     except:
         return jsonify({'ok': False, 'txt': 'Invalid userId'})
 
-    u = await db.users.find_one(
+    u = db.users.find_one(
         {'_id': uid},
         {'password': 0, 'email': 0}
     )
@@ -128,7 +137,7 @@ async def OtherUserInfo():
         return jsonify({'ok': False, 'txt': 'User not found'})
 
     u['_id'] = str(u['_id'])
-    cscores = await get_challenge_scores()
+    cscores = get_challenge_scores()
     u['score'] = sum(cscores.get(x, 0) for x in u['solves'])
     assert set(u.keys()) == set(
         ['_id', 'username', 'lastSolveTime', 'solves', 'score']
@@ -137,13 +146,13 @@ async def OtherUserInfo():
 
 
 @app.route("/myuserinfo")
-async def MyUserInfo():
-    u = await get_user_record()
+def MyUserInfo():
+    u = get_user_record()
     if not u:
         return jsonify(False)
     u['_id'] = str(u['_id'])
     del u['password']
-    cscores = await get_challenge_scores()
+    cscores = get_challenge_scores()
     u['score'] = sum(cscores.get(x, 0) for x in u['solves'])
     assert set(u.keys()) in [
         set(['_id', 'username', 'lastSolveTime', 'solves', 'score']),
@@ -153,11 +162,11 @@ async def MyUserInfo():
 
 
 @app.route("/setpassword", methods=['POST'])
-async def setpassword():
-    u = await get_user_record()
+def setpassword():
+    u = get_user_record()
     assert u
 
-    args = await request.get_json()
+    args = request.get_json()
     checkStr(args['oldpass'], args['newpass'])
 
     if not bcrypt.checkpw(args['oldpass'].encode('utf8'),
@@ -165,7 +174,7 @@ async def setpassword():
         return jsonify({'ok': False, 'txt': 'Incorrect old password'})
 
     newhash = bcrypt.hashpw(args['newpass'].encode('utf8'), bcrypt.gensalt())
-    await db.users.update_one(
+    db.users.update_one(
         {'_id': u['_id']},
         {"$set": {"password": newhash.decode('utf8')}}
     )
@@ -173,18 +182,18 @@ async def setpassword():
 
 
 @app.route("/setemail", methods=['POST'])
-async def setemail():
-    u = await get_user_record()
+def setemail():
+    u = get_user_record()
     assert u
 
-    args = await request.get_json()
+    args = request.get_json()
     checkStr(args['password'], args['email'])
 
     if not bcrypt.checkpw(args['password'].encode('utf8'),
                           u['password'].encode('utf8')):
         return jsonify({'ok': False, 'txt': 'Incorrect password'})
 
-    await db.users.update_one(
+    db.users.update_one(
         {'_id': u['_id']},
         {"$set": {"email": args['email']}}
     )
@@ -192,45 +201,45 @@ async def setemail():
 
 
 @app.route("/submitflag", methods=['POST'])
-async def submitflag():
-    u = await get_user_record()
+def submitflag():
+    u = get_user_record()
     assert u
 
-    args = await request.get_json()
+    args = request.get_json()
     checkStr(args['flag'])
 
-    c = await db.challenges.find_one({'flag': args['flag']})
+    c = db.challenges.find_one({'flag': args['flag']})
     if not c:
         return jsonify({'ok': False, 'msg': "Unknown flag."})
 
     if str(c['_id']) in u['solves']:
         return jsonify({'ok': False, 'msg': "You've already solved that one."})
 
-    await db.users.update_one(
+    db.users.update_one(
         {'_id': u['_id']},
         {
             "$set": {"lastSolveTime": int(time())},
             "$push": {"solves": str(c['_id'])},
         })
 
-    await calcStats()
+    calcStats()
     return jsonify({'ok': True, 'msg': 'Nice job!'})
 
 
 @app.route("/scoreboard")
-async def getScoreboard():
+def getScoreboard():
     return jsonify(scoreboard)
 
 
 @app.route("/newaccount", methods=['POST'])
-async def newaccount():
-    args = await request.get_json()
+def newaccount():
+    args = request.get_json()
     checkStr(args['username'], args['password'])
 
     if len(args['username']) > 32:
         return jsonify({'ok': False, 'txt': 'Shorter name please'})
 
-    if await db.users.find_one({'username': args['username']}):
+    if db.users.find_one({'username': args['username']}):
         return jsonify({'ok': False, 'txt': 'Username already taken'})
 
     hashed = bcrypt.hashpw(args['password'].encode('utf8'), bcrypt.gensalt())
@@ -244,12 +253,16 @@ async def newaccount():
 
 
 @app.route("/challenges")
-async def challenges():
-    chals = []
-    async for chal in db.challenges.find({}, {'flag': 0}):
-        chal['_id'] = str(chal['_id'])
-        chal['solves'] = solveCounts.get(chal['_id'], 0)
-        chals.append(chal)
+def challenges():
+    chals = [
+        {
+            'title': chal.title,
+            'points': chal.points,
+            'text': chal.text,
+            'solves': solveCounts.get(chal.id, 0),
+        }
+        for chal in db.query(Challenge)
+    ]
     return jsonify(chals)
 
 

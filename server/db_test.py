@@ -9,13 +9,25 @@ def rand_id():
     return secrets.randbelow(1 << 63)
 
 
-u = User(id=rand_id(), name='john smith')
+def gen_chal(title):
+    return Challenge(
+        title=title,
+        points=10,
+        text='asdfg',
+        flag='flag[1234]',
+        category='web',
+    )
 
-u.solves.append(Challenge(title='foo'))
-u.solves.append(Challenge(title='bar'))
 
 s = DbSession()
+
+u = User(id=rand_id(), name='john smith', lastSolveTime=3)
+
+u.solves.append(gen_chal('foo'))
+u.solves.append(gen_chal('bar'))
+
 s.add(u)
+s.add(gen_chal('boo'))
 s.commit()
 
 for x in s.query(User).all():
