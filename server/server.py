@@ -20,11 +20,8 @@ statsLock = Lock()
 
 
 def rand_id():
-    # give a positive, signed, 64-bit integer
-    r = 0
-    while r == 0:
-        r = randbelow(1 << 63)
-    return r
+    # give a positive number between 1 and javascript's MAX_SAFE_INTEGER
+    return randbelow((1 << 53)-1)+1
 
 
 @app.teardown_appcontext
