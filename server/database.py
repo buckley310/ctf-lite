@@ -18,7 +18,9 @@ solves = Table(
 class User(Base):
     __tablename__ = 'users'
     id = Column(Integer, primary_key=True, nullable=False)
-    name = Column(Text(), nullable=False)
+    name = Column(Text(), nullable=False, unique=True)
+    password = Column(Text(), nullable=False)
+    email = Column(Text())
     lastSolveTime = Column(Integer, nullable=False)
     solves = relationship(
         'Challenge', secondary=solves, back_populates="solvers")

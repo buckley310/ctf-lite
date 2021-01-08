@@ -73,13 +73,10 @@ def calcStats():
 
 
 def get_user_record():
-    try:
-        auth = jwt.decode(request.headers['X-Sesid'],
-                          jwt_secret,
-                          algorithms=['HS256'])
-    except:
-        return None
-    return db.users.find_one({'_id': ObjectId(auth['userid'])})
+    auth = jwt.decode(request.headers['X-Sesid'],
+                      jwt_secret,
+                      algorithms=['HS256'])
+    return db.query(User).filter_by(id=auth['userid']).one()
 
 
 def get_challenge_scores():
@@ -104,67 +101,58 @@ def login():
         return jsonify({'txt': 'Slow down, jeez'})
     # block brute force /\
 
-    u = db.users.find_one({'username': args['username']})
-
-    if not u:
+    try:
+        u = db.query(User).filter_by(name=args['username']).one()
+    except:
         bcrypt.hashpw(b'no timing attacks', bcrypt.gensalt())
         return jsonify({'txt': 'Incorrect'})
 
-    if not bcrypt.checkpw(args['password'].encode('utf8'),
-                          u['password'].encode('utf8')):
+    if not bcrypt.checkpw(args['password'].encode('utf8'), u.password):
         return jsonify({'txt': 'Incorrect'})
 
-    token = jwt.encode({'userid': str(u['_id'])},
+    token = jwt.encode({'userid': u.id},
                        jwt_secret,
                        algorithm='HS256')
 
-    return jsonify({"sesid": token.decode('utf8')})
+    return jsonify({"sesid": token})
 
 
 @app.route("/userinfo")
 def OtherUserInfo():
-    checkStr(request.args['uid'])
     try:
-        uid = ObjectId(request.args['uid'])
+        u = db.query(User).filter_by(id=int(request.args['uid'])).one()
     except:
-        return jsonify({'ok': False, 'txt': 'Invalid userId'})
-
-    u = db.users.find_one(
-        {'_id': uid},
-        {'password': 0, 'email': 0}
-    )
-    if not u:
         return jsonify({'ok': False, 'txt': 'User not found'})
 
-    u['_id'] = str(u['_id'])
-    cscores = get_challenge_scores()
-    u['score'] = sum(cscores.get(x, 0) for x in u['solves'])
-    assert set(u.keys()) == set(
-        ['_id', 'username', 'lastSolveTime', 'solves', 'score']
-    )
-    return jsonify({'ok': True, 'data': u})
+    return jsonify({
+        '_id': u.id,
+        'username': u.name,
+        'lastSolveTime': u.lastSolveTime,
+        'solves': [x.id for x in u.solves],
+        'score': sum(x.points for x in u.solves),
+    })
 
 
 @app.route("/myuserinfo")
 def MyUserInfo():
-    u = get_user_record()
-    if not u:
+    try:
+        u = get_user_record()
+    except:
         return jsonify(False)
-    u['_id'] = str(u['_id'])
-    del u['password']
-    cscores = get_challenge_scores()
-    u['score'] = sum(cscores.get(x, 0) for x in u['solves'])
-    assert set(u.keys()) in [
-        set(['_id', 'username', 'lastSolveTime', 'solves', 'score']),
-        set(['_id', 'username', 'lastSolveTime', 'solves', 'score', 'email'])
-    ]
-    return jsonify(u)
+
+    return jsonify({
+        '_id': u.id,
+        'username': u.name,
+        'lastSolveTime': u.lastSolveTime,
+        'solves': [x.id for x in u.solves],
+        'score': sum(x.points for x in u.solves),
+        'email': u.email,
+    })
 
 
 @app.route("/setpassword", methods=['POST'])
 def setpassword():
     u = get_user_record()
-    assert u
 
     args = request.get_json()
     checkStr(args['oldpass'], args['newpass'])
@@ -184,7 +172,6 @@ def setpassword():
 @app.route("/setemail", methods=['POST'])
 def setemail():
     u = get_user_record()
-    assert u
 
     args = request.get_json()
     checkStr(args['password'], args['email'])
@@ -203,24 +190,21 @@ def setemail():
 @app.route("/submitflag", methods=['POST'])
 def submitflag():
     u = get_user_record()
-    assert u
 
     args = request.get_json()
     checkStr(args['flag'])
 
-    c = db.challenges.find_one({'flag': args['flag']})
-    if not c:
+    if not db.query(Challenge).filter_by(flag=args['flag']).count():
         return jsonify({'ok': False, 'msg': "Unknown flag."})
 
-    if str(c['_id']) in u['solves']:
+    c = db.query(Challenge).filter_by(flag=args['flag']).one()
+
+    if c in u.solves:
         return jsonify({'ok': False, 'msg': "You've already solved that one."})
 
-    db.users.update_one(
-        {'_id': u['_id']},
-        {
-            "$set": {"lastSolveTime": int(time())},
-            "$push": {"solves": str(c['_id'])},
-        })
+    u.solves.append(c)
+    u.lastSolveTime = int(time())
+    db.commit()
 
     calcStats()
     return jsonify({'ok': True, 'msg': 'Nice job!'})
@@ -239,16 +223,19 @@ def newaccount():
     if len(args['username']) > 32:
         return jsonify({'ok': False, 'txt': 'Shorter name please'})
 
-    if db.users.find_one({'username': args['username']}):
+    if db.query(User).filter_by(name=args['username']).count():
         return jsonify({'ok': False, 'txt': 'Username already taken'})
 
     hashed = bcrypt.hashpw(args['password'].encode('utf8'), bcrypt.gensalt())
 
-    db.users.insert_one({
-        'username': args['username'],
-        'password': hashed.decode('utf8'),
-        'lastSolveTime': 0, 'solves': [],
-    })
+    db.add(User(
+        name=args['username'],
+        password=hashed,
+        lastSolveTime=0,
+        solves=[],
+    ))
+    db.commit()
+
     return jsonify({'ok': True})
 
 
@@ -256,6 +243,7 @@ def newaccount():
 def challenges():
     chals = [
         {
+            '_id': chal.id,
             'title': chal.title,
             'category': chal.category,
             'points': chal.points,
