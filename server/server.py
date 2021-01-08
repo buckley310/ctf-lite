@@ -21,7 +21,10 @@ statsLock = Lock()
 
 def rand_id():
     # give a positive, signed, 64-bit integer
-    return randbelow(1 << 63)
+    r = 0
+    while r == 0:
+        r = randbelow(1 << 63)
+    return r
 
 
 @app.teardown_appcontext
@@ -229,6 +232,7 @@ def newaccount():
     hashed = bcrypt.hashpw(args['password'].encode('utf8'), bcrypt.gensalt())
 
     db.add(User(
+        id=rand_id(),
         name=args['username'],
         password=hashed,
         lastSolveTime=0,
