@@ -257,6 +257,7 @@ def challenges():
     chals = [
         {
             'title': chal.title,
+            'category': chal.category,
             'points': chal.points,
             'text': chal.text,
             'solves': solveCounts.get(chal.id, 0),
