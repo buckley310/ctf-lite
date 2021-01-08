@@ -124,13 +124,13 @@ def OtherUserInfo():
     except:
         return jsonify({'ok': False, 'txt': 'User not found'})
 
-    return jsonify({
+    return jsonify({'ok': True, 'data': {
         '_id': u.id,
         'username': u.name,
         'lastSolveTime': u.lastSolveTime,
         'solves': [x.id for x in u.solves],
         'score': sum(x.points for x in u.solves),
-    })
+    }})
 
 
 @app.route("/myuserinfo")

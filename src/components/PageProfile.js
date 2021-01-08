@@ -47,9 +47,9 @@ export default class PageProfile extends React.Component {
     componentDidUpdate = () => {
         let otherUser = this.props.path[1];
         if (otherUser) {
-            if (otherUser.match(/^[a-z0-9]+$/i)) {
-                if (otherUser !== this.state.fetchedUser) {
-                    this.setState({ fetchedUser: otherUser, userinfo: this.blankuser });
+            if (Number.isInteger(parseInt(otherUser))) {
+                if (parseInt(otherUser) !== this.state.fetchedUser) {
+                    this.setState({ fetchedUser: parseInt(otherUser), userinfo: this.blankuser });
                     Api('userinfo?uid=' + otherUser)
                         .then(x => { if (x.ok) this.setState({ fetchedUser: x.data._id, userinfo: x.data }) })
                         .catch(loadingError);
