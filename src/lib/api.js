@@ -18,7 +18,11 @@ function Api(path, args = false) {
     if (args)
         headers['Content-Type'] = 'application/json';
 
-    return fetch('http://127.0.0.1:5000/' + path, {
+    let apiEndpoint = 'http://localhost:5000/';
+    if (window.location.host.match(/^ctf/))
+        apiEndpoint = window.location.host.replace(/^ctf\./, "https://ctfapi.");
+
+    return fetch(apiEndpoint + '/' + path, {
         cache: "no-cache",
         method: args ? 'POST' : 'GET',
         body: args ? JSON.stringify(args) : null,
