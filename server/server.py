@@ -10,7 +10,7 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 from threading import Lock
 from secrets import randbelow
-from database import User, Challenge, DbSession as db
+from database import User, Challenge, Solve, DbSession as db
 
 app = Flask(__name__)
 CORS(app)
@@ -51,7 +51,7 @@ def calcStats():
         solveCounts = dict([
             (
                 chal.id,
-                db.query(User).filter(User.solves.contains(chal)).count()
+                db.query(Solve).filter_by(challenge=chal.id).count()
             )
             for chal in db.query(Challenge)
         ])
@@ -59,13 +59,20 @@ def calcStats():
         cscores = get_challenge_scores()
         board = []
         for u in db.query(User):
-            score = sum(cscores.get(x.id, 0) for x in u.solves)
+            score = sum(
+                cscores.get(x.challenge, 0) for x in
+                db.query(Solve).filter_by(user=u.id)
+            )
             bisect.insort(board, (-score,
-                                  u.lastSolveTime,
+                                  max([
+                                      x.timestamp for x in
+                                      db.query(Solve).filter_by(user=u.id)
+                                  ] + [0]),
                                   u.name,
                                   u.id))
             while len(board) > 10 and board[-1][0] != board[-2][0]:
                 board.pop()
+        print(board)
         scoreboard = [
             {'username': n, 'score': -s, '_id': i}
             for s, _, n, i in board
@@ -124,12 +131,18 @@ def OtherUserInfo():
     except:
         return jsonify({'ok': False, 'txt': 'User not found'})
 
+    usolves = db.query(Challenge).filter(
+        Challenge.id.in_([
+            x.challenge for x in
+            db.query(Solve).filter_by(user=u.id)
+        ])
+    )
+
     return jsonify({'ok': True, 'data': {
         '_id': u.id,
         'username': u.name,
-        'lastSolveTime': u.lastSolveTime,
-        'solves': [x.id for x in u.solves],
-        'score': sum(x.points for x in u.solves),
+        'solves': [x.id for x in usolves],
+        'score': sum(x.points for x in usolves),
     }})
 
 
@@ -140,12 +153,18 @@ def MyUserInfo():
     except:
         return jsonify(False)
 
+    usolves = db.query(Challenge).filter(
+        Challenge.id.in_([
+            x.challenge for x in
+            db.query(Solve).filter_by(user=u.id)
+        ])
+    )
+
     return jsonify({
         '_id': u.id,
         'username': u.name,
-        'lastSolveTime': u.lastSolveTime,
-        'solves': [x.id for x in u.solves],
-        'score': sum(x.points for x in u.solves),
+        'solves': [x.id for x in usolves],
+        'score': sum(x.points for x in usolves),
         'email': u.email,
     })
 
@@ -194,16 +213,15 @@ def submitflag():
     args = request.get_json()
     checkStr(args['flag'])
 
-    if not db.query(Challenge).filter_by(flag=args['flag']).count():
+    try:
+        c = db.query(Challenge).filter_by(flag=args['flag']).one()
+    except:
         return jsonify({'ok': False, 'msg': "Unknown flag."})
 
-    c = db.query(Challenge).filter_by(flag=args['flag']).one()
-
-    if c in u.solves:
+    if db.query(Solve).filter_by(user=u.id, challenge=c.id).count():
         return jsonify({'ok': False, 'msg': "You've already solved that one."})
 
-    u.solves.append(c)
-    u.lastSolveTime = int(time())
+    db.add(Solve(user=u.id, challenge=c.id))
     db.commit()
 
     calcStats()
@@ -232,8 +250,6 @@ def newaccount():
         id=rand_id(),
         name=args['username'],
         password=hashed,
-        lastSolveTime=0,
-        solves=[],
     ))
     db.commit()
 

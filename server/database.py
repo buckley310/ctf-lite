@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+from time import time
 from sqlalchemy import create_engine, Column, ForeignKey, Integer, Text, Table
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import scoped_session, sessionmaker, relationship
@@ -7,12 +8,13 @@ from sqlalchemy.orm import scoped_session, sessionmaker, relationship
 Base = declarative_base()
 engine = create_engine("sqlite:////tmp/test.db", echo=False)
 
-solves = Table(
-    'solves', Base.metadata,
-    Column('id', Integer, primary_key=True, autoincrement=True),
-    Column('user_id', Integer, ForeignKey('users.id')),
-    Column('challenge_id', Integer, ForeignKey('challenges.id')),
-)
+
+class Solve(Base):
+    __tablename__ = 'solves'
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user = Column(Integer, ForeignKey('users.id'))
+    challenge = Column(Integer, ForeignKey('challenges.id'))
+    timestamp = Column(Integer, default=lambda: int(time()))
 
 
 class User(Base):
@@ -21,9 +23,6 @@ class User(Base):
     name = Column(Text(), nullable=False, unique=True)
     password = Column(Text(), nullable=False)
     email = Column(Text())
-    lastSolveTime = Column(Integer, nullable=False)
-    solves = relationship(
-        'Challenge', secondary=solves, back_populates="solvers")
 
 
 class Challenge(Base):
@@ -34,8 +33,6 @@ class Challenge(Base):
     flag = Column(Text, nullable=False)
     category = Column(Text, nullable=False)
     points = Column(Integer, nullable=False)
-    solvers = relationship(
-        'User', secondary=solves, back_populates="solves")
 
 
 Base.metadata.create_all(engine)
