@@ -176,15 +176,12 @@ def setpassword():
     args = request.get_json()
     checkStr(args['oldpass'], args['newpass'])
 
-    if not bcrypt.checkpw(args['oldpass'].encode('utf8'),
-                          u['password'].encode('utf8')):
+    if not bcrypt.checkpw(args['oldpass'].encode('utf8'), u.password):
         return jsonify({'ok': False, 'txt': 'Incorrect old password'})
 
     newhash = bcrypt.hashpw(args['newpass'].encode('utf8'), bcrypt.gensalt())
-    db.users.update_one(
-        {'_id': u['_id']},
-        {"$set": {"password": newhash.decode('utf8')}}
-    )
+    u.password = newhash
+    db.commit()
     return jsonify({'ok': True})
 
 
@@ -195,14 +192,11 @@ def setemail():
     args = request.get_json()
     checkStr(args['password'], args['email'])
 
-    if not bcrypt.checkpw(args['password'].encode('utf8'),
-                          u['password'].encode('utf8')):
+    if not bcrypt.checkpw(args['password'].encode('utf8'), u.password):
         return jsonify({'ok': False, 'txt': 'Incorrect password'})
 
-    db.users.update_one(
-        {'_id': u['_id']},
-        {"$set": {"email": args['email']}}
-    )
+    u.email = args['email']
+    db.commit()
     return jsonify({'ok': True})
 
 
