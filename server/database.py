@@ -4,10 +4,10 @@ from time import time
 from sqlalchemy import create_engine, Column, ForeignKey, Integer, Text, Table
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import scoped_session, sessionmaker, relationship
-from config import database_path
+from config import DB_PATH
 
 Base = declarative_base()
-engine = create_engine(database_path, echo=False)
+engine = create_engine(DB_PATH)
 
 
 class Solve(Base):
