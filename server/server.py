@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-import os
 import jwt
 import bcrypt
 import bisect
@@ -13,9 +12,9 @@ from secrets import randbelow
 from database import User, Challenge, Solve, DbSession as db
 
 app = Flask(__name__)
+app.config.from_pyfile('config.py')
 CORS(app)
 rateLimit = deque(maxlen=64)
-jwt_secret = os.urandom(32)
 statsLock = Lock()
 
 
@@ -81,7 +80,7 @@ def calcStats():
 
 def get_user_record():
     auth = jwt.decode(request.headers['X-Sesid'],
-                      jwt_secret,
+                      app.config['JWT_SECRET'],
                       algorithms=['HS256'])
     return db.query(User).filter_by(id=auth['userid']).one()
 
@@ -118,7 +117,7 @@ def login():
         return jsonify({'txt': 'Incorrect'})
 
     token = jwt.encode({'userid': u.id},
-                       jwt_secret,
+                       app.config['JWT_SECRET'],
                        algorithm='HS256')
 
     return jsonify({"sesid": token})
