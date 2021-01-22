@@ -2,7 +2,12 @@
 
 from os import urandom, environ as env
 
+SERVER_NAME = env['CTF_SERVER_NAME']
 
 DB_PATH = env['CTF_DB_PATH']
 
-JWT_SECRET = env['CTF_JWT_SECRET'] if 'CTF_JWT_SECRET' in env else urandom(32)
+SECRET_KEY = env['CTF_SECRET'] if 'CTF_SECRET' in env else urandom(32)
+
+
+DISCORD_CLIENT_ID = env['CTF_DISCORD_CLIENT_ID']
+DISCORD_CLIENT_SECRET = env['CTF_DISCORD_CLIENT_SECRET']

@@ -22,7 +22,6 @@ class User(Base):
     __tablename__ = 'users'
     id = Column(Integer, primary_key=True, nullable=False)
     name = Column(Text(), nullable=False, unique=True)
-    password = Column(Text(), nullable=False)
     email = Column(Text())
 
 

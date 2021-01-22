@@ -1,5 +1,9 @@
 // let userinfo;
 
+let apiEndpoint = 'http://localhost:5000';
+if (window.location.host.match(/^ctf/))
+    apiEndpoint = window.location.host.replace(/^ctf\./, "https://ctfapi.");
+
 function loadingError(e) {
     console.error(e);
     let txt = document.querySelector('#errorText');
@@ -18,10 +22,6 @@ function Api(path, args = false) {
     if (args)
         headers['Content-Type'] = 'application/json';
 
-    let apiEndpoint = 'http://localhost:5000/';
-    if (window.location.host.match(/^ctf/))
-        apiEndpoint = window.location.host.replace(/^ctf\./, "https://ctfapi.");
-
     return fetch(apiEndpoint + '/' + path, {
         cache: "no-cache",
         method: args ? 'POST' : 'GET',
@@ -30,4 +30,4 @@ function Api(path, args = false) {
     }).then(x => x.json());
 }
 
-export { Api, loadingError };
+export { Api, loadingError, apiEndpoint };

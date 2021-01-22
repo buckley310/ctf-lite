@@ -3,14 +3,12 @@ import PageHome from './PageHome';
 import PageChallenges from './PageChallenges';
 import PageScoreboard from './PageScoreboard';
 import PageProfile from './PageProfile';
-import PageRegister from './PageRegister';
 import PageLogin from './PageLogin';
 
 let ValidPages = {
     'challenges': PageChallenges,
     'scoreboard': PageScoreboard,
     'profile': PageProfile,
-    'register': PageRegister,
     'login': PageLogin,
     '': PageHome
 };

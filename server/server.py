@@ -1,15 +1,20 @@
 #!/usr/bin/env python3
 
+import os
 import jwt
+import json
 import bcrypt
 import bisect
+from base64 import b64encode, b64decode
 from collections import deque, Counter
 from time import time
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from threading import Lock
-from secrets import randbelow
 from database import User, Challenge, Solve, DbSession as db
+
+from authlib.integrations.flask_client import OAuth
+from loginpass import create_flask_blueprint, Discord
 
 app = Flask(__name__)
 app.config.from_pyfile('config.py')
@@ -18,9 +23,55 @@ rateLimit = deque(maxlen=64)
 statsLock = Lock()
 
 
-def rand_id():
-    # give a positive number between 1 and javascript's MAX_SAFE_INTEGER
-    return randbelow((1 << 53)-1)+1
+def handle_authorize(remote, token, user_info):
+    if not user_info:
+        # TODO: why did we get here?
+        assert False
+        return ''
+
+    # TODO: discord IDs are all numbers, but other backends may be alphanum?
+    try:
+        u = db.query(User).filter_by(id=int(user_info['sub'])).one()
+        if user_info['name'] != u.name or user_info['email'] != u.email:
+            u.name = user_info['name']
+            if user_info['email_verified']:
+                u.email = user_info['email']
+            db.commit()
+    except:
+        u = User(
+            id=int(user_info['sub']),
+            name=user_info['name'],
+            email=user_info['email'] if user_info['email_verified'] else None
+        )
+        db.add(u)
+        db.commit()
+
+    token = jwt.encode({'userid': u.id},
+                       app.config['SECRET_KEY'],
+                       algorithm='HS256')
+
+    return f'''
+        <!DOCTYPE HTML>
+        <html>
+            <head>
+                <meta charset="utf-8">
+            </head>
+            <body>
+                <script>
+                    window.opener.postMessage(
+                        "{token}",
+                        "https://ctf.devstuff.site"
+                    );
+                    window.close();
+                </script>
+            </body>
+        </html>
+    '''
+
+
+oauth = OAuth(app)
+bp = create_flask_blueprint([Discord], oauth, handle_authorize)
+app.register_blueprint(bp, url_prefix='')
 
 
 @app.teardown_appcontext
@@ -80,7 +131,7 @@ def calcStats():
 
 def get_user_record():
     auth = jwt.decode(request.headers['X-Sesid'],
-                      app.config['JWT_SECRET'],
+                      app.config['SECRET_KEY'],
                       algorithms=['HS256'])
     return db.query(User).filter_by(id=auth['userid']).one()
 
@@ -90,37 +141,6 @@ def get_challenge_scores():
         (x.id, x.points)
         for x in db.query(Challenge)
     ])
-
-
-@app.route("/login", methods=['POST'])
-def login():
-    args = request.get_json()
-    checkStr(args['username'], args['password'])
-
-    # block brute force \/
-    stamp = int(time()/10)
-    rateLimit.append((stamp, args['username']))
-    rateLimit.append((stamp, request.remote_addr))
-    limitStats = Counter(rateLimit)
-    if (limitStats[(stamp, args['username'])] > 5 or
-            limitStats[(stamp, request.remote_addr)] > 5):
-        return jsonify({'txt': 'Slow down, jeez'})
-    # block brute force /\
-
-    try:
-        u = db.query(User).filter_by(name=args['username']).one()
-    except:
-        bcrypt.hashpw(b'no timing attacks', bcrypt.gensalt())
-        return jsonify({'txt': 'Incorrect'})
-
-    if not bcrypt.checkpw(args['password'].encode('utf8'), u.password):
-        return jsonify({'txt': 'Incorrect'})
-
-    token = jwt.encode({'userid': u.id},
-                       app.config['JWT_SECRET'],
-                       algorithm='HS256')
-
-    return jsonify({"sesid": token})
 
 
 @app.route("/userinfo")
@@ -168,37 +188,6 @@ def MyUserInfo():
     })
 
 
-@app.route("/setpassword", methods=['POST'])
-def setpassword():
-    u = get_user_record()
-
-    args = request.get_json()
-    checkStr(args['oldpass'], args['newpass'])
-
-    if not bcrypt.checkpw(args['oldpass'].encode('utf8'), u.password):
-        return jsonify({'ok': False, 'txt': 'Incorrect old password'})
-
-    newhash = bcrypt.hashpw(args['newpass'].encode('utf8'), bcrypt.gensalt())
-    u.password = newhash
-    db.commit()
-    return jsonify({'ok': True})
-
-
-@app.route("/setemail", methods=['POST'])
-def setemail():
-    u = get_user_record()
-
-    args = request.get_json()
-    checkStr(args['password'], args['email'])
-
-    if not bcrypt.checkpw(args['password'].encode('utf8'), u.password):
-        return jsonify({'ok': False, 'txt': 'Incorrect password'})
-
-    u.email = args['email']
-    db.commit()
-    return jsonify({'ok': True})
-
-
 @app.route("/submitflag", methods=['POST'])
 def submitflag():
     u = get_user_record()
@@ -226,29 +215,6 @@ def getScoreboard():
     return jsonify(scoreboard)
 
 
-@app.route("/newaccount", methods=['POST'])
-def newaccount():
-    args = request.get_json()
-    checkStr(args['username'], args['password'])
-
-    if len(args['username']) > 32:
-        return jsonify({'ok': False, 'txt': 'Shorter name please'})
-
-    if db.query(User).filter_by(name=args['username']).count():
-        return jsonify({'ok': False, 'txt': 'Username already taken'})
-
-    hashed = bcrypt.hashpw(args['password'].encode('utf8'), bcrypt.gensalt())
-
-    db.add(User(
-        id=rand_id(),
-        name=args['username'],
-        password=hashed,
-    ))
-    db.commit()
-
-    return jsonify({'ok': True})
-
-
 @app.route("/challenges")
 def challenges():
     chals = [
@@ -265,5 +231,19 @@ def challenges():
     return jsonify(chals)
 
 
+class ReverseProxied(object):
+    # https://web.archive.org/web/20190623105727/http://flask.pocoo.org/snippets/35/
+    def __init__(self, app):
+        self.app = app
+
+    def __call__(self, environ, start_response):
+        scheme = environ.get('HTTP_X_SCHEME', '')
+        if scheme:
+            environ['wsgi.url_scheme'] = scheme
+        return self.app(environ, start_response)
+
+
 if __name__ == '__main__':
-    app.run(host='0.0.0.0')
+    app.config['DEBUG'] = True
+    app.wsgi_app = ReverseProxied(app.wsgi_app)  # force HTTPS scheme
+    app.run(host='0.0.0.0', port=5000)
