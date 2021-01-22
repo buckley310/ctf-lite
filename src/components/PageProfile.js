@@ -72,52 +72,7 @@ export default class PageProfile extends React.Component {
                 <div>score: {this.state.userinfo.score}</div>
                 <div style={personalStuff}>
                     <div>email: {this.state.userinfo.email}</div>
-
-                    <form onSubmit={this.changePass} style={{ backgroundColor: '#f0f0f0' }}>
-                        <h3>Change Password:</h3>
-                        <table><tbody>
-                            <tr>
-                                <th className="loginLabel">Current Password:</th>
-                                <th className="loginInput"> <input id="passwordOld" type="password" required /> </th>
-                            </tr>
-                            <tr>
-                                <th className="loginLabel">New Password:</th>
-                                <th className="loginInput"> <input id="password" type="password" required /> </th>
-                            </tr>
-                            <tr>
-                                <th className="loginLabel">Confirm New Password:</th>
-                                <th className="loginInput"> <input id="password2" type="password" required /> </th>
-                            </tr>
-                            <tr>
-                                <th></th>
-                                <th className="loginInput"> <input type="submit" value="Change" /> </th>
-                            </tr>
-                        </tbody></table>
-                    </form>
-
-                    <form onSubmit={this.changeEmail} style={{ backgroundColor: '#f0f0f0' }}>
-                        <h3>Change Email:</h3>
-                        <table><tbody>
-                            <tr>
-                                <th className="loginLabel">Current Password:</th>
-                                <th className="loginInput"> <input id="epassword" type="password" required /> </th>
-                            </tr>
-                            <tr>
-                                <th className="loginLabel">New Email:</th>
-                                <th className="loginInput"> <input id="email1" type="email" required /> </th>
-                            </tr>
-                            <tr>
-                                <th className="loginLabel">Confirm New Email:</th>
-                                <th className="loginInput"> <input id="email2" type="email" required /> </th>
-                            </tr>
-                            <tr>
-                                <th></th>
-                                <th className="loginInput"> <input type="submit" value="Change" /> </th>
-                            </tr>
-                        </tbody></table>
-                    </form>
                 </div>
-
                 <h1>Solved Challenges:</h1>
                 <ChallengeCardGrid solves={this.state.userinfo ? this.state.userinfo.solves : []} />
             </div>
