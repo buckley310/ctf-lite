@@ -24,14 +24,15 @@ statsLock = Lock()
 
 
 def handle_authorize(remote, token, user_info):
-    if not user_info:
+    if (not user_info) or (not remote):
         # TODO: why did we get here?
         assert False
         return ''
 
-    # TODO: discord IDs are all numbers, but other backends may be alphanum?
+    userid = remote.name + ',' + user_info['sub']
+
     try:
-        u = db.query(User).filter_by(id=int(user_info['sub'])).one()
+        u = db.query(User).filter_by(id=userid).one()
         if user_info['name'] != u.name or user_info['email'] != u.email:
             u.name = user_info['name']
             if user_info['email_verified']:
@@ -39,7 +40,7 @@ def handle_authorize(remote, token, user_info):
             db.commit()
     except:
         u = User(
-            id=int(user_info['sub']),
+            id=userid,
             name=user_info['name'],
             email=user_info['email'] if user_info['email_verified'] else None
         )
@@ -122,7 +123,6 @@ def calcStats():
                                   u.id))
             while len(board) > 10 and board[-1][0] != board[-2][0]:
                 board.pop()
-        print(board)
         scoreboard = [
             {'username': n, 'score': -s, '_id': i}
             for s, _, n, i in board
