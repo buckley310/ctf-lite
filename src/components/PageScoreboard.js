@@ -10,7 +10,8 @@ export default class PageScoreboard extends React.Component {
     render() {
         return (
             <div className="capWidth">
-                <h1>scoreboard - top 10</h1>
+                <h1>Scoreboard</h1>
+                <h3>Top 10 players</h3>
                 <table className={styles.scoreboard}>
                     <thead>
                         <tr>

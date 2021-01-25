@@ -18,8 +18,7 @@ export default class PageChallenges extends React.Component {
     render() {
         return (
             <div className="capWidth">
-                <h1>Challenges!</h1>
-
+                <h1>Challenges</h1>
                 <form style={this.props.userinfo ? {} : { display: 'none' }} onSubmit={this.submitFlag}>
                     <input id="flagInput" type="text" placeholder="flag{}" />
                     <input type="submit" value="Submit" />
