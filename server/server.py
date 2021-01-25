@@ -24,13 +24,7 @@ statsLock = Lock()
 
 
 def handle_authorize(remote, token, user_info):
-    if (not user_info) or (not remote):
-        # TODO: why did we get here?
-        assert False
-        return ''
-
     userid = remote.name + ',' + user_info['sub']
-
     try:
         u = db.query(User).filter_by(id=userid).one()
         if user_info['name'] != u.name or user_info['email'] != u.email:
@@ -83,13 +77,6 @@ def shutdown_session(exception=None):
 @app.before_first_request
 def start_db():
     calcStats()
-
-
-def checkStr(*argv):
-    for s in argv:
-        # TODO: raise instead of assert
-        assert isinstance(s, str)
-        assert len(s)
 
 
 def calcStats():
@@ -193,7 +180,6 @@ def submitflag():
     u = get_user_record()
 
     args = request.get_json()
-    checkStr(args['flag'])
 
     try:
         c = db.query(Challenge).filter_by(flag=args['flag']).one()
