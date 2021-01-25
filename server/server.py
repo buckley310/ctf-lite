@@ -55,7 +55,7 @@ def handle_authorize(remote, token, user_info):
                 <script>
                     window.opener.postMessage(
                         "{token}",
-                        "https://ctf.devstuff.site"
+                        "{app.config['FRONTEND_URL']}"
                     );
                     window.close();
                 </script>

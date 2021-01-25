@@ -2,6 +2,8 @@
 
 from os import urandom, environ as env
 
+FRONTEND_URL = env['CTF_FRONTEND_URL']
+
 SERVER_NAME = env['CTF_SERVER_NAME']
 
 DB_PATH = env['CTF_DB_PATH']
