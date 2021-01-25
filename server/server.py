@@ -146,7 +146,7 @@ def get_challenge_scores():
 @app.route("/userinfo")
 def OtherUserInfo():
     try:
-        u = db.query(User).filter_by(id=int(request.args['uid'])).one()
+        u = db.query(User).filter_by(id=request.args['uid']).one()
     except:
         return jsonify({'ok': False, 'txt': 'User not found'})
 

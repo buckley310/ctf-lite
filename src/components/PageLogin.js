@@ -1,10 +1,11 @@
 import React from 'react';
+import { apiEndpoint } from '../lib/api.js';
 
 function PageLogin(props) {
 
     let doLogin = e => {
         e.preventDefault();
-        window.open("//ctfapi.devstuff.site/login/discord", '_blank', 'menubar=0');
+        window.open(apiEndpoint + "/login/discord", '_blank', 'menubar=0,width=520,height=768');
     };
 
     return (

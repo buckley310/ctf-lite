@@ -30,17 +30,6 @@
 
 <body>
     <div id="root"></div>
-    <script>
-        window.addEventListener("message", (event) => {
-            // TODO: dont hardcode address
-            if (event.origin === "https://ctfapi.devstuff.site") {
-                console.log(event.data);
-                localStorage.setItem('sessionToken', event.data);
-                window.location.assign('#');
-                window.location.reload(); // TODO: trigger profile check, dont reload
-            }
-        });
-    </script>
 </body>
 
 </html>
