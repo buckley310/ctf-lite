@@ -25,7 +25,6 @@ function NavBar(props) {
                     <a style={s('logout')} href="#/" onClick={doLogout}>logout</a>
                 </span>
                 <span style={{ display: props.userinfo ? 'none' : '' }}>
-                    <a style={s('register')} href="#/register">register</a>
                     <a style={s('login')} href="#/login">login</a>
                 </span>
             </div>
