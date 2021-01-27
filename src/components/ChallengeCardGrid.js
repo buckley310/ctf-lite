@@ -18,7 +18,7 @@ export default class ChallengeCardGrid extends React.Component {
                 {Object.keys(sections).map(category => (
                     <div key={category}>
                         <div style={{ fontSize: "1.5em" }}>
-                            {this.state.challenges[0].category}
+                            {category}
                         </div>
                         <div className="challengeSection" style={{ display: 'flex', flexWrap: 'wrap' }}>
                             {sections[category].map(chal =>
