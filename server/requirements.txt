@@ -1,5 +1,4 @@
 Authlib == 0.15.*
-bcrypt == 3.*
 Flask == 1.*
 Flask-Cors == 3.*
 loginpass == 0.5
